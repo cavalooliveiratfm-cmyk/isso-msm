@@ -1,0 +1,36 @@
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+
+local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- AJUSTE OS NOMES DAS SUAS GUIS AQUI:
+local NOME_DA_GUI = "EscapeGui"       -- Nome da ScreenGui do minigame
+local NOME_DO_INDICADOR = "TimingRing" -- Nome do indicador do anel/cor
+
+local pressionando = false
+
+RunService.RenderStepped:Connect(function()
+	if pressionando then return end
+
+	local gui = playerGui:FindFirstChild(NOME_DA_GUI)
+	if gui and gui.Enabled then
+		local anel = gui:FindFirstChild(NOME_DO_INDICADOR, true)
+		if anel then
+			local cor = anel.ImageColor3 or anel.BackgroundColor3
+			
+			-- Verifica se a cor ficou verde (Verde alto, Vermelho baixo)
+			if cor and cor.G > 0.6 and cor.R < 0.4 then
+				pressionando = true
+				
+				-- Aperta Espaço automaticamente no tempo verde
+				VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+				task.wait(0.05)
+				VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+				
+				task.wait(0.4)
+				pressionando = false
+			end
+		end
+	end
+end)
