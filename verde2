@@ -1,87 +1,51 @@
-local Players = game:GetService("Players")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-
-local localPlayer = Players.LocalPlayer
-local playerGui = localPlayer:WaitForChild("PlayerGui")
-
--- CONFIGURAÇÃO DE NOMES DA GUI DO JOGO
-local NOME_DA_GUI = "EscapeGui"       -- Nome da ScreenGui do minigame de escape
-local NOME_DO_INDICADOR = "TimingRing" -- Nome do elemento da cor/anel
-
--- ESTADO INICIAL (LIGADO / DESLIGADO)
-local autoEscapeAtivo = true
-
--- CRIAÇÃO DO BOTÃO / PAINEL NA TELA
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "AutoEscapeMenu"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
-
-local toggleButton = Instance.new("TextButton")
-toggleButton.Name = "ToggleButton"
-toggleButton.Size = UDim2.new(0, 180, 0, 42)
-toggleButton.Position = UDim2.new(0.02, 0, 0.2, 0)
-toggleButton.BackgroundColor3 = Color3.fromRGB(30, 215, 96) -- Verde quando ligado
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Font = Enum.Font.SourceSansBold
-toggleButton.TextSize = 16
-toggleButton.Text = "Auto Escape: LIGADO [K]"
-toggleButton.Parent = screenGui
-
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 8)
-uiCorner.Parent = toggleButton
-
-local function atualizarBotao()
-	if autoEscapeAtivo then
-		toggleButton.Text = "Auto Escape: LIGADO [K]"
-		toggleButton.BackgroundColor3 = Color3.fromRGB(30, 215, 96) -- Verde
-	else
-		toggleButton.Text = "Auto Escape: DESLIGADO [K]"
-		toggleButton.BackgroundColor3 = Color3.fromRGB(225, 45, 45) -- Vermelho
-	end
-end
-
--- CLIQUE NO BOTÃO DA TELA
-toggleButton.MouseButton1Click:Connect(function()
-	autoEscapeAtivo = not autoEscapeAtivo
-  atualizarBotao()2
-end)
-
--- ATALHO NO TECLADO (TECLA K)
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
-		autoEscapeAtivo = not autoEscapeAtivo
-		atualizarBotao()
-	end
-end)
-
--- LÓGICA DO AUTO ESCAPE
-local pressionando = false
-
-RunService.RenderStepped:Connect(function()
-	if not autoEscapeAtivo or pressionando then return end
-
-	local gui = playerGui:FindFirstChild(NOME_DA_GUI)
-	if gui and gui.Enabled then
-		local anel = gui:FindFirstChild(NOME_DO_INDICADOR, true)
-		if anel then
-			local cor = anel.ImageColor3 or anel.BackgroundColor3
-			
-			-- Verifica se a cor ficou verde (Verde alto, Vermelho baixo)
-			if cor and cor.G > 0.6 and cor.R < 0.4 then
-				pressionando = true
-				
-				-- Aperta Espaço automaticamente no tempo verde
-				VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
-				task.wait(0.05)
-				VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
-				
-				task.wait(0.4)
-				pressionando = false
-			end
-		end
-	end
-end)
+{
+  "AutoEscapeScript": {
+    "Servicos": {
+      "Players": "game:GetService('Players')",
+      "VirtualInputManager": "game:GetService('VirtualInputManager')",
+      "RunService": "game:GetService('RunService')",
+      "UserInputService": "game:GetService('UserInputService')"
+    },
+    "Configuracao": {
+      "NomeDaGui": "EscapeGui",
+      "NomeDoIndicador": "TimingRing",
+      "AutoEscapeAtivo": true
+    },
+    "Interface": {
+      "ScreenGui": {
+        "Nome": "AutoEscapeMenu",
+        "ResetOnSpawn": false,
+        "Parent": "playerGui"
+      },
+      "Botao": {
+        "Nome": "ToggleButton",
+        "Tamanho": [180, 42],
+        "Posicao": [0.02, 0.2],
+        "CorLigado": [30, 215, 96],
+        "CorDesligado": [225, 45, 45],
+        "TextoLigado": "Auto Escape: LIGADO [K]",
+        "TextoDesligado": "Auto Escape: DESLIGADO [K]",
+        "Fonte": "SourceSansBold",
+        "TamanhoFonte": 16,
+        "CorTexto": [255, 255, 255],
+        "CantosArredondados": 8
+      }
+    },
+    "Eventos": {
+      "CliqueBotao": "Alterna autoEscapeAtivo e atualizaBotao()",
+      "TeclaK": "Alterna autoEscapeAtivo e atualizaBotao()"
+    },
+    "Logica": {
+      "RenderStepped": {
+        "Condicao": "autoEscapeAtivo e nao pressionando",
+        "BuscaGui": "EscapeGui",
+        "BuscaAnel": "TimingRing",
+        "VerificaCor": {
+          "Verde": "cor.G > 0.6",
+          "Vermelho": "cor.R < 0.4"
+        },
+        "Acao": "Pressiona tecla Espaço automaticamente"
+      }
+    }
+  }
+}
