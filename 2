@@ -1,0 +1,36 @@
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+local PORCENTAGEM_AUMENTO = 2 
+local MULTIPLICADOR = 1 + (PORCENTAGEM_AUMENTO / 100)
+
+local function aplicarVelocidade(character)
+    local humanoid = character:WaitForChild("Humanoid", 10)
+    if not humanoid then return end
+
+    task.wait(0.3)
+    local velOriginal = humanoid.WalkSpeed
+    humanoid.WalkSpeed = velOriginal * MULTIPLICADOR
+
+    local conexao
+    conexao = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+        if not character or not character.Parent then
+            if conexao then conexao:Disconnect() end
+            return
+        end
+
+        local velAtual = humanoid.WalkSpeed
+        local velCalculada = velOriginal * MULTIPLICADOR
+
+        if math.abs(velAtual - velCalculada) > 0.05 and not character:GetAttribute("Calculando") then
+            character:SetAttribute("Calculando", true)
+            velOriginal = velAtual
+            humanoid.WalkSpeed = velAtual * MULTIPLICADOR
+            task.wait(0.1)
+            character:SetAttribute("Calculando", nil)
+        end
+    end)
+end
+
+if localPlayer.Character then aplicarVelocidade(localPlayer.Character) end
+localPlayer.CharacterAdded:Connect(aplicarVelocidade)
