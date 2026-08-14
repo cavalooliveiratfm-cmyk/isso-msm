@@ -1,0 +1,27 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+if humanoid then
+	humanoid.WalkSpeed = humanoid.WalkSpeed * 1.5
+end
+
+RunService.Heartbeat:Connect(function()
+	local char = player.Character
+	if not char then return end
+
+	if char:GetAttribute("Stamina") then
+		char:SetAttribute("Stamina", char:GetAttribute("MaxStamina") or 100)
+	end
+	if player:GetAttribute("Stamina") then
+		player:SetAttribute("Stamina", player:GetAttribute("MaxStamina") or 100)
+	end
+
+	local staminaObj = char:FindFirstChild("Stamina", true) or char:FindFirstChild("Energy", true) or char:FindFirstChild("stamina", true)
+	if staminaObj and (staminaObj:IsA("NumberValue") or staminaObj:IsA("IntValue")) then
+		staminaObj.Value = 100
+	end
+end)
