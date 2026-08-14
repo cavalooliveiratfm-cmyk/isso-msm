@@ -1,0 +1,34 @@
+-- Script de Auto Escape (teste)
+-- Coloque este script em LocalScript dentro de StarterPlayerScripts
+
+-- Serviços necessários
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Variável que representa o estado do timer
+-- Aqui você deve conectar com o sistema real do seu jogo
+-- Exemplo: "timerColor" pode ser atualizado conforme o estado (vermelho/verde)
+local timerColor = "Verde" -- valor inicial para teste
+
+-- Função para verificar se pode escapar
+local function tentarEscape()
+    if timerColor == "Verde" then
+        print("Escape automático ativado!")
+        -- Aqui você coloca a lógica de soltar o jogador
+        -- Exemplo fictício:
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            -- Simulação de 'escape'
+            player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    else
+        print("Timer vermelho, escape bloqueado.")
+    end
+end
+
+-- Detecta quando o jogador aperta espaço
+UserInputService.InputBegan:Connect(function(input, isProcessed)
+    if not isProcessed and input.KeyCode == Enum.KeyCode.Space then
+        tentarEscape()
+    end
+end)
