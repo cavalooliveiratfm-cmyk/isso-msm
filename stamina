@@ -1,0 +1,172 @@
+--[[
+    ====================================================================
+    MENU SAVANA HUB: VELOCIDADE (+5%) + STAMINA INFINITA
+    ====================================================================
+--]]
+
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+
+local ativadoVelocidade = false
+local ativadoStamina = true -- Stamina infinita ativada por padrão
+local multiplicador = 1.05 -- +5%
+local velocidadeBaseOriginal = nil
+
+local NOMES_STAMINA = {"Stamina", "Energy", "Energia", "Stam", "SprintStamina", "RunStamina", "StaminaValue"}
+
+-- Criar Gui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SavanaFullMenuUI"
+screenGui.ResetOnSpawn = false
+
+pcall(function() screenGui.Parent = CoreGui end)
+if not screenGui.Parent then screenGui.Parent = localPlayer:WaitForChild("PlayerGui") end
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 280, 0, 190)
+mainFrame.Position = UDim2.new(0.5, -140, 0.5, -95)
+mainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 10)
+mainCorner.Parent = mainFrame
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(255, 170, 0)
+mainStroke.Thickness = 2
+mainStroke.Parent = mainFrame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.Position = UDim2.new(0, 0, 0, 5)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.Text = "🐾 SAVANA MENU HUB"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 16
+title.Parent = mainFrame
+
+-- Botão 1: Velocidade
+local speedBtn = Instance.new("TextButton")
+speedBtn.Size = UDim2.new(0.88, 0, 0, 40)
+speedBtn.Position = UDim2.new(0.06, 0, 0, 45)
+speedBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+speedBtn.Font = Enum.Font.GothamBold
+speedBtn.Text = "⚡ VELOCIDADE (+5%): OFF"
+speedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBtn.TextSize = 13
+speedBtn.Parent = mainFrame
+
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0, 8)
+speedCorner.Parent = speedBtn
+
+-- Botão 2: Stamina Infinita
+local stamBtn = Instance.new("TextButton")
+stamBtn.Size = UDim2.new(0.88, 0, 0, 40)
+stamBtn.Position = UDim2.new(0.06, 0, 0, 95)
+stamBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 70)
+stamBtn.Font = Enum.Font.GothamBold
+stamBtn.Text = "♾️ STAMINA INFINITA: ON"
+stamBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+stamBtn.TextSize = 13
+stamBtn.Parent = mainFrame
+
+local stamCorner = Instance.new("UICorner")
+stamCorner.CornerRadius = UDim.new(0, 8)
+stamCorner.Parent = stamBtn
+
+local footer = Instance.new("TextLabel")
+footer.Size = UDim2.new(1, 0, 0, 20)
+footer.Position = UDim2.new(0, 0, 0, 155)
+footer.BackgroundTransparency = 1
+footer.Font = Enum.Font.Gotham
+footer.Text = "Stamina Infinita Ativada!"
+footer.TextColor3 = Color3.fromRGB(100, 255, 100)
+footer.TextSize = 12
+footer.Parent = mainFrame
+
+local function atualizarVelocidade()
+    local char = localPlayer.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    if not velocidadeBaseOriginal then
+        velocidadeBaseOriginal = humanoid.WalkSpeed
+    end
+
+    if ativadoVelocidade then
+        humanoid.WalkSpeed = velocidadeBaseOriginal * multiplicador
+    else
+        humanoid.WalkSpeed = velocidadeBaseOriginal
+    end
+end
+
+-- Lógica de Stamina Infinita Contínua
+RunService.Heartbeat:Connect(function()
+    if not ativadoStamina then return end
+    local char = localPlayer.Character
+    if not char then return end
+
+    for _, nome in ipairs(NOMES_STAMINA) do
+        if char:GetAttribute(nome) then
+            char:SetAttribute(nome, char:GetAttribute("Max" .. nome) or 100)
+        end
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum and hum:GetAttribute(nome) then
+            hum:SetAttribute(nome, hum:GetAttribute("Max" .. nome) or 100)
+        end
+    end
+
+    for _, obj in ipairs(char:GetDescendants()) do
+        if (obj:IsA("NumberValue") or obj:IsA("IntValue")) then
+            for _, nome in ipairs(NOMES_STAMINA) do
+                if string.find(string.lower(obj.Name), string.lower(nome)) then
+                    obj.Value = obj:FindFirstChild("MaxValue") and obj.MaxValue.Value or 100
+                end
+            end
+        end
+    end
+end)
+
+speedBtn.MouseButton1Click:Connect(function()
+    ativadoVelocidade = not ativadoVelocidade
+    if ativadoVelocidade then
+        speedBtn.Text = "⚡ VELOCIDADE (+5%): ON"
+        TweenService:Create(speedBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 180, 70)}):Play()
+    else
+        speedBtn.Text = "⚡ VELOCIDADE (+5%): OFF"
+        TweenService:Create(speedBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(200, 50, 50)}):Play()
+    end
+    atualizarVelocidade()
+end)
+
+stamBtn.MouseButton1Click:Connect(function()
+    ativadoStamina = not ativadoStamina
+    if ativadoStamina then
+        stamBtn.Text = "♾️ STAMINA INFINITA: ON"
+        TweenService:Create(stamBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 180, 70)}):Play()
+        footer.Text = "Stamina Infinita Ativada!"
+        footer.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        stamBtn.Text = "♾️ STAMINA INFINITA: OFF"
+        TweenService:Create(stamBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(200, 50, 50)}):Play()
+        footer.Text = "Stamina Desativada"
+        footer.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end
+end)
+
+localPlayer.CharacterAdded:Connect(function()
+    velocidadeBaseOriginal = nil
+    task.wait(0.5)
+    atualizarVelocidade()
+end)
