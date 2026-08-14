@@ -1,0 +1,122 @@
+--[[
+    ====================================================================
+    MENU GUI INTERATIVO - SAVANA SPEED (+5%) ATIVAR / DESATIVAR
+    ====================================================================
+--]]
+
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+local localPlayer = Players.LocalPlayer
+
+local ativado = false
+local multiplicador = 1.05 -- +5% de aumento
+local velocidadeBaseOriginal = nil
+
+-- Criar Interface
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SavanaSpeedMenuUI"
+screenGui.ResetOnSpawn = false
+
+pcall(function() screenGui.Parent = CoreGui end)
+if not screenGui.Parent then screenGui.Parent = localPlayer:WaitForChild("PlayerGui") end
+
+-- Frame do Menu (Arrastável)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 260, 0, 150)
+mainFrame.Position = UDim2.new(0.5, -130, 0.5, -75)
+mainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 10)
+mainCorner.Parent = mainFrame
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(255, 170, 0)
+mainStroke.Thickness = 2
+mainStroke.Parent = mainFrame
+
+-- Título
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.Position = UDim2.new(0, 0, 0, 5)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.Text = "🦁 SAVANA SPEED MENU"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 16
+title.Parent = mainFrame
+
+-- Botão Toggle (Ativar / Desativar)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0.85, 0, 0, 42)
+toggleBtn.Position = UDim2.new(0.075, 0, 0, 50)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.Text = "🔴 DESATIVADO"
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.TextSize = 14
+toggleBtn.Parent = mainFrame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = toggleBtn
+
+-- Texto Status
+local footer = Instance.new("TextLabel")
+footer.Size = UDim2.new(1, 0, 0, 20)
+footer.Position = UDim2.new(0, 0, 0, 110)
+footer.BackgroundTransparency = 1
+footer.Font = Enum.Font.Gotham
+footer.Text = "Status: Velocidade Normal"
+footer.TextColor3 = Color3.fromRGB(150, 150, 150)
+footer.TextSize = 12
+footer.Parent = mainFrame
+
+-- Função para Atualizar Velocidade
+local function atualizarVelocidade()
+    local char = localPlayer.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    if not velocidadeBaseOriginal then
+        velocidadeBaseOriginal = humanoid.WalkSpeed
+    end
+
+    if ativado then
+        humanoid.WalkSpeed = velocidadeBaseOriginal * multiplicador
+        footer.Text = "Status: +5% de Velocidade Ativo!"
+        footer.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        humanoid.WalkSpeed = velocidadeBaseOriginal
+        footer.Text = "Status: Velocidade Normal"
+        footer.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end
+end
+
+-- Clique no Botão
+toggleBtn.MouseButton1Click:Connect(function()
+    ativado = not ativado
+
+    if ativado then
+        toggleBtn.Text = "🟢 ATIVADO (+5%)"
+        TweenService:Create(toggleBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 180, 70)}):Play()
+    else
+        toggleBtn.Text = "🔴 DESATIVADO"
+        TweenService:Create(toggleBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(200, 50, 50)}):Play()
+    end
+
+    atualizarVelocidade()
+end)
+
+localPlayer.CharacterAdded:Connect(function()
+    velocidadeBaseOriginal = nil
+    task.wait(0.5)
+    atualizarVelocidade()
+end)
